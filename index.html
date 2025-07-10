@@ -1,132 +1,513 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.8">
-    <title>My Profile</title>
-    <style>
-        .background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 80%;
-            max-width: 800px;
-            margin: 20px auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1, h2 {
-            text-align: center;
-            color: #333;
-        }
-        .profile-pic {
-            display: block;
-            max-width: 150px;
-            height: auto;
-            border-radius: 50%;
-            margin: 0 auto;
-            border: 2px solid #ccc;
-        }
-        .section {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .info-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        .info-table td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .info-table td:first-child {
-            font-weight: bold;
-            color: #555;
-            text-align: right;
-        }
-        audio {
-            margin-top: 10px;
-        }
-        footer {margin: 20px 0;
-            text-align: center;}
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyber Terminal Quiz</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Courier New', monospace;
+      background: black;
+      color: #33ff33;
+      overflow-x: hidden;
+    }
+
+    #matrix {
+      position: fixed;
+      top: 0; left: 0;
+      z-index: -1;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.85);
+      border: 1px solid #33ff33;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #33ff33;
+      position: relative;
+      z-index: 1;
+    }
+
+    .landing, .quiz-container {
+      display: none;
+    }
+
+    .landing.active, .quiz-container.active {
+      display: block;
+    }
+
+    h1, .question, .score, .rate, p {
+      color: #33ff33;
+      line-height: 1.6;
+    }
+
+    h1::after {
+      content: '_';
+      animation: blink 1s step-start infinite;
+    }
+
+    .start-btn, .answer-btn, .next-btn {
+      background: transparent;
+      border: 1px solid #33ff33;
+      color: #33ff33;
+      padding: 12px 20px;
+      margin: 10px 0;
+      width: 100%;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .start-btn:hover, .answer-btn:hover, .next-btn:hover {
+      background-color: #33ff33;
+      color: #000;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+
+    .score {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .rate {
+      margin-top: 10px;
+      color: #66ff66;
+    }
+
+    .typing {
+      display: inline-block;
+      overflow: hidden;
+      border-right: 2px solid #33ff33;
+      animation: blink-caret 0.75s step-end infinite;
+      white-space: normal;
+      word-wrap: break-word;
+    }
+
+    input#username {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      background: black;
+      border: 1px solid #33ff33;
+      color: #33ff33;
+      font-family: monospace;
+    }
+
+    @keyframes blink-caret {
+      50% { border-color: transparent }
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .question, h1 { font-size: 1rem; }
+      .start-btn, .answer-btn, .next-btn { font-size: 0.9rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="background-video">
-        <iframe src="https://gifer.com/embed/2swA" width=100% height=100% frameBorder="0" allowFullScreen></iframe><p>
+
+  <!-- Matrix Background -->
+  <canvas id="matrix"></canvas>
+
+  <div class="container">
+    <!-- Landing Page -->
+    <div class="landing active" id="landing">
+      <h1>Initializing Cybersecurity Quiz</h1>
+      <p id="landing-text" class="typing"></p>
+      <input type="text" id="username" placeholder="> Enter your codename..." />
+      <button class="start-btn" onclick="startQuizFlow()">> Start Quiz</button>
     </div>
-    <div class="container">
-        <h1>My Profile</h1>
-        <div class="section">
-            <img src="https://scontent.fmnl3-2.fna.fbcdn.net/v/t39.30808-6/341006372_484651980449022_3188317587648652318_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=a5f93a&_nc_ohc=o2ZWciKZ-RcQ7kNvgGxOK63&_nc_zt=23&_nc_ht=scontent.fmnl3-2.fna&_nc_gid=AYLCYw9-15n4mn7WPL40SDV&oh=00_AYDYa6AbH44gDHFHY5aVaq1-6cONchoOwofB2y2budebDA&oe=6739E15E" alt="Profile Picture" class="profile-pic">
-        </div>
-        <div class="section">
-            <h2>Introduction</h2>
-            <p>Hello! I'm Vincent Geli, a passionate individual with a keen interest in programming. I enjoy exploring new ideas, learning new skills, and connecting with others. Welcome to my profile!</p>
-        </div>
-        <div class="section">
-            <h2>Personal Information</h2>
-            <table class="info-table">
-                <tr>
-                    <td>Full Name:</td>
-                    <td>Vincent N Geli Jr</td>
-                </tr> 
-                <tr>
-                    <td>E-Mail:</td>
-                    <td>vincentgeli26@gmail.com</td>
-                </tr> 
-                <tr>
-                    <td>Contact Number:</td>
-                    <td>+63 939 154 7607</td>
-                </tr>
-                <tr>
-                    <td>School:</td>
-                    <td>Antipolo City Senior Highschool</td>
-                </tr> 
-                <tr>
-                    <td>Grade Level:</td>
-                    <td>Grade 11</td>
-                </tr>
-                <tr>
-                    <td>Section:</td>
-                    <td>ICT-1102</td>
-                </tr>
-                <tr>
-                    <td>Location:</td>
-                    <td>Antipolo City</td>
-                </tr>
-                <tr>
-                    <td>Hobbies:</td>
-                    <td>Gaming</td>
-                </tr>
-            </table>
-        </div>
-        <div class="section">
-            <h2>Listen to my favorite song!</h2>
-            <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/72UVMFjUAL6KJvwi36VBiz?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-        </div>
-        <div class="section">
-            <h2>Watch my favorite scene on Dandadan!</h2>
-            <iframe width="100%" height="400" src="https://www.youtube.com/embed/fS2R8jwQXzE" title="Okarun Goes All Out 4K - Dandadan EP 4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        </div>
+
+    <!-- Quiz Interface -->
+    <div class="quiz-container" id="quiz">
+      <div class="question" id="question">[Loading Question...]</div>
+      <div id="answer-buttons"></div>
+      <div id="feedback" class="rate" style="display: none;"></div>
+      <button class="next-btn" onclick="nextQuestion()">> Next</button>
+      <div class="score" id="score" style="display: none;"></div>
+      <div class="rate" id="rate" style="display: none;"></div>
+      <div id="history" class="rate" style="margin-top: 20px;"></div>
+      <div id="tips" class="rate" style="margin-top: 20px; display: none;"></div>
+      <button id="download-btn" class="next-btn" style="display: none; margin-top: 10px;">> Download Score</button>
     </div>
-</body>
-<footer> 
-    <p>&copy; 2024 Vincent Geli. All rights reserved.</p>
-</footer>
-</html>
+  </div>
+
+<!-- (The <head> and styling remains unchanged, as previously built) -->
+
+<script>
+  // ✅ Matrix Background Effect (unchanged)
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  let letters = '01'.split('');
+  let fontSize = 14;
+  let columns = canvas.width / fontSize;
+  let drops = Array.from({ length: columns }).fill(1);
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#33ff33';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = letters[Math.floor(Math.random() * letters.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix, 35);
+
+  // ✅ Typing effect
+  function typeText(element, text, speed = 30, callback = null) {
+    let i = 0;
+    const chars = text.split('');
+    element.innerHTML = '';
+    const interval = setInterval(() => {
+      if (i < chars.length) {
+        element.innerHTML += chars[i] === '\n' ? '<br>' : chars[i];
+        i++;
+      } else {
+        clearInterval(interval);
+        if (callback) callback();
+      }
+    }, speed);
+  }
+
+  window.onload = () => {
+    const intro = `> Welcome, Agent.\n> This terminal will assess your knowledge of digital defense.\n> Proceed when ready...`;
+    typeText(document.getElementById('landing-text'), intro, 30);
+  };
+
+  // ✅ Variables
+  const landing = document.getElementById('landing');
+  const quizContainer = document.getElementById('quiz');
+  const questionElement = document.getElementById("question");
+  const answerButtons = document.getElementById("answer-buttons");
+  const feedback = document.getElementById("feedback");
+  const nextButton = document.querySelector(".next-btn");
+  const scoreDisplay = document.getElementById("score");
+  const rateDisplay = document.getElementById("rate");
+  const historyContainer = document.getElementById("history");
+
+  let currentUser = "";
+  let questions = [];
+  let currentQuestionIndex = 0;
+  let score = 0;
+
+  // ✅ Cybersecurity Awareness Questions
+  const originalQuestions = [
+    {
+      question: "What is phishing?",
+      answers: [
+        { text: "A way to secure your device", correct: false },
+        { text: "A type of cyberattack using fake emails or websites", correct: true },
+        { text: "A tool used to encrypt data", correct: false },
+        { text: "A legitimate antivirus update", correct: false }
+      ]
+    },
+    {
+      question: "Which of the following is a strong password?",
+      answers: [
+        { text: "123456", correct: false },
+        { text: "password123", correct: false },
+        { text: "MyDog!2023$", correct: true },
+        { text: "qwerty", correct: false }
+      ]
+    },
+    {
+      question: "Why avoid public Wi-Fi for sensitive tasks?",
+      answers: [
+        { text: "It’s too fast", correct: false },
+        { text: "It may allow hackers to intercept data", correct: true },
+        { text: "It uses too much battery", correct: false },
+        { text: "It blocks social media", correct: false }
+      ]
+    },
+    {
+      question: "What does 2FA stand for?",
+      answers: [
+        { text: "Two-Factor Authentication", correct: true },
+        { text: "Two-Fold Access", correct: false },
+        { text: "Twice-Failed Access", correct: false },
+        { text: "Transfer File Application", correct: false }
+      ]
+    },
+    {
+      question: "Which is NOT a safe practice?",
+      answers: [
+        { text: "Installing software from unknown sources", correct: true },
+        { text: "Regularly updating your software", correct: false },
+        { text: "Using antivirus software", correct: false },
+        { text: "Creating backups", correct: false }
+      ]
+    },
+    {
+      question: "What does a firewall do?",
+      answers: [
+        { text: "Increases screen brightness", correct: false },
+        { text: "Controls network traffic and blocks threats", correct: true },
+        { text: "Speeds up your internet", correct: false },
+        { text: "Fixes broken files", correct: false }
+      ]
+    },
+    {
+      question: "Which file extension is potentially dangerous?",
+      answers: [
+        { text: ".exe", correct: true },
+        { text: ".txt", correct: false },
+        { text: ".jpg", correct: false },
+        { text: ".pdf", correct: false }
+      ]
+    },
+    {
+      question: "Best action for suspicious email?",
+      answers: [
+        { text: "Open it to check", correct: false },
+        { text: "Click any links", correct: false },
+        { text: "Delete it without clicking anything", correct: true },
+        { text: "Reply and ask", correct: false }
+      ]
+    },
+    {
+      question: "When should you change passwords?",
+      answers: [
+        { text: "Every 5 years", correct: false },
+        { text: "Only when you forget", correct: false },
+        { text: "Every few months or after a breach", correct: true },
+        { text: "Never", correct: false }
+      ]
+    },
+    {
+      question: "What is the goal of ransomware?",
+      answers: [
+        { text: "Speed up your system", correct: false },
+        { text: "Teach security", correct: false },
+        { text: "Encrypt files and demand payment", correct: true },
+        { text: "Provide free software", correct: false }
+      ]
+    }
+  ];
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+    
+  function startQuizFlow() {
+    const input = document.getElementById("username").value.trim();
+    if (!input) {
+      alert("Please enter your codename.");
+      return;
+    }
+    currentUser = input;
+    landing.classList.remove('active');
+    quizContainer.classList.add('active');
+    startQuiz();
+  }
+
+  function startQuiz() {
+    questions = shuffle([...originalQuestions]).slice(0, 5);
+    currentQuestionIndex = 0;
+    score = 0;
+    scoreDisplay.style.display = "none";
+    rateDisplay.style.display = "none";
+    feedback.style.display = "none";
+    feedback.innerHTML = "";
+    nextButton.innerText = "> Next";
+    showQuestion();
+  }
+
+  function showQuestion() {
+    resetState();
+    const currentQuestion = questions[currentQuestionIndex];
+    questionElement.innerHTML = "> " + currentQuestion.question;  
+    
+    shuffle([...currentQuestion.answers]).forEach(answer => {
+      const button = document.createElement("button");
+      button.innerText = "> " + answer.text;
+      button.classList.add("answer-btn");
+      if (answer.correct) button.dataset.correct = answer.correct;
+      button.addEventListener("click", selectAnswer);
+      answerButtons.appendChild(button);
+    });
+  }
+
+
+  function resetState() {
+    nextButton.style.display = "none";
+    answerButtons.innerHTML = "";
+    feedback.style.display = "none";
+    feedback.innerHTML = "";
+  }
+
+  function selectAnswer(e) {
+    const selectedButton = e.target;
+    const correct = selectedButton.dataset.correct === "true";
+
+    feedback.style.display = "block";
+    if (correct) {
+      score++;
+      selectedButton.style.backgroundColor = "#00cc44";
+      selectedButton.style.color = "#000";
+      typeText(feedback, "> Access Granted: Correct Answer ✅", 10);
+    } else {
+      selectedButton.style.backgroundColor = "#cc0000";
+      selectedButton.style.color = "#fff";
+      typeText(feedback, "> Access Denied: Incorrect Answer ❌", 10);
+    }
+
+    Array.from(answerButtons.children).forEach(button => {
+      button.disabled = true;
+      if (button.dataset.correct === "true") {
+        button.style.backgroundColor = "#00cc44";
+        button.style.color = "#000";
+      }
+    });
+
+    nextButton.style.display = "inline-block";
+  }
+
+  function nextQuestion() {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      showQuestion();
+    } else {
+      showScore();
+    }
+  }
+
+  function saveScore(name, score, total) {
+    const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+    const accuracy = ((score / total) * 100).toFixed(2);
+    history.push({ name, score, total, accuracy, date: new Date().toLocaleString() });
+    localStorage.setItem("quizHistory", JSON.stringify(history));
+  }
+
+  function displayHistory() {
+    const history = JSON.parse(localStorage.getItem("quizHistory") || "[]").reverse().slice(0, 5);
+    if (history.length === 0) {
+      historyContainer.innerHTML = "> No score history yet.";
+      return;
+    }
+    let html = "> Recent Attempts:<br>";
+    history.forEach(entry => {
+      html += `> [${entry.date}] ${entry.name} — ${entry.score}/${entry.total} (${entry.accuracy}%)<br>`;
+    });
+    historyContainer.innerHTML = html;
+  }
+
+  function showScore() {
+    resetState();
+    typeText(questionElement, "> Quiz Completed.", 30);
+    scoreDisplay.style.display = "block";
+    rateDisplay.style.display = "block";
+    const accuracy = ((score / questions.length) * 100).toFixed(2);
+    typeText(scoreDisplay, `> Score: ${score}/${questions.length}`, 30);
+    typeText(rateDisplay, `> Accuracy: ${accuracy}%`, 30);
+    saveScore(currentUser, score, questions.length);
+    displayHistory();
+    showTips();
+    document.getElementById("download-btn").style.display = "inline-block";
+    document.getElementById("download-btn").onclick = downloadScore;
+    nextButton.innerText = "> Restart Quiz";
+    nextButton.style.display = "inline-block";
+    nextButton.onclick = () => location.reload();
+    
+  }
+    
+  function showTips() {
+  const tipsContainer = document.getElementById("tips");
+  tipsContainer.style.display = "block";
+
+  const accuracy = (score / questions.length) * 100;
+  let tips = [];
+  let header = "> 💡 Personalized Cybersecurity Tips:<br>";
+
+  if (accuracy < 50) {
+    tips = [
+      "> 🔐 Use strong and unique passwords for each account.",
+      "> ⚠️ Be cautious with links in emails and messages.",
+      "> 🔄 Keep your system and apps updated.",
+      "> 📚 Learn about common threats like phishing and malware.",
+      "> ✅ Use antivirus software and enable firewalls."
+    ];
+    header += "> You're just starting out. Begin with the basics:<br>";
+  } else if (accuracy < 80) {
+    tips = [
+      "> 🔐 Enable Two-Factor Authentication on important accounts.",
+      "> 💾 Backup your files regularly.",
+      "> 📶 Avoid logging into sensitive accounts on public Wi-Fi.",
+      "> 🔍 Be skeptical of unexpected email attachments.",
+      "> 🧠 Stay updated on new cyberthreats."
+    ];
+    header += "> Good progress! Here’s how to strengthen your defenses:<br>";
+  } else {
+    tips = [
+      "> 🧰 Consider using a password manager.",
+      "> 🔒 Encrypt sensitive files and folders.",
+      "> 👀 Watch for social engineering tricks beyond phishing.",
+      "> 🌐 Monitor your digital footprint.",
+      "> 🧠 Share your knowledge with others to spread awareness."
+    ];
+    header += "> Excellent awareness! Time to go pro:<br>";
+  }
+
+    let tipsHTML = header;
+    tips.forEach(tip => {
+      tipsHTML += tip + "<br>";
+    });
+    
+      tipsContainer.innerHTML = tipsHTML;
+  }
+
+  function downloadScore() {
+    const date = new Date().toLocaleString();
+    const accuracy = ((score / questions.length) * 100).toFixed(2);
+    const filename = `${currentUser}_CyberQuiz_Score.txt`;
+    const content = 
+
+    `Cybersecurity Awareness Quiz - Result
+
+    Codename: ${currentUser}
+    Date: ${date}
+
+    Score: ${score} out of ${questions.length}
+    Accuracy: ${accuracy}%
+
+    Thank you for participating in the quiz.
+    Stay safe and keep learning about cybersecurity! 
+
+    - Avoid phishing links
+    - Use strong passwords
+    - Keep your software updated
+    - Enable 2FA when possible
+    `;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  }
+</script>
