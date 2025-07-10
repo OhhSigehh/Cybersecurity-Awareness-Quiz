@@ -142,13 +142,10 @@
       <div class="rate" id="rate" style="display: none;"></div>
       <div id="history" class="rate" style="margin-top: 20px;"></div>
       <div id="tips" class="rate" style="margin-top: 20px; display: none;"></div>
-      <button id="download-btn" class="next-btn" style="display: none; margin-top: 10px;">> Download Score</button>
+      <button id="download-pdf-btn" class="next-btn" style="display: none; margin-top: 10px;">> Download PDF</button>
     </div>
-  </div>
-
-<!-- (The <head> and styling remains unchanged, as previously built) -->
-
-<script>
+      
+    <script>
   // ✅ Matrix Background Effect (unchanged)
   const canvas = document.getElementById('matrix');
   const ctx = canvas.getContext('2d');
@@ -429,8 +426,8 @@
     saveScore(currentUser, score, questions.length);
     displayHistory();
     showTips();
-    document.getElementById("download-btn").style.display = "inline-block";
-    document.getElementById("download-btn").onclick = downloadScore;
+    document.getElementById("download-pdf-btn").style.display = "inline-block";
+    document.getElementById("download-pdf-btn").onclick = downloadPDF;
     nextButton.innerText = "> Restart Quiz";
     nextButton.style.display = "inline-block";
     nextButton.onclick = () => location.reload();
@@ -482,32 +479,44 @@
       tipsContainer.innerHTML = tipsHTML;
   }
 
-  function downloadScore() {
-    const date = new Date().toLocaleString();
-    const accuracy = ((score / questions.length) * 100).toFixed(2);
-    const filename = `${currentUser}_CyberQuiz_Score.txt`;
-    const content = 
+  async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-    `Cybersecurity Awareness Quiz - Result
+  const date = new Date().toLocaleString();
+  const accuracy = ((score / questions.length) * 100).toFixed(2);
 
-    Codename: ${currentUser}
-    Date: ${date}
+  const content = [
+    "Cybersecurity Awareness Quiz - Result",
+    "",
+    `Codename: ${currentUser}`,
+    `Date: ${date}`,
+    "",
+    `Score: ${score} out of ${questions.length}`,
+    `Accuracy: ${accuracy}%`,
+    "",
+    "Thank you for participating in the quiz.",
+    "Stay safe and keep learning about cybersecurity! 🔐",
+    "",
+    "Tips to Improve Your Cybersecurity:",
+    "• Use strong, unique passwords for each account",
+    "• Enable Two-Factor Authentication (2FA)",
+    "• Avoid clicking unknown links in emails",
+    "• Keep your software up to date",
+    "• Use antivirus software and firewalls"
+  ];
 
-    Score: ${score} out of ${questions.length}
-    Accuracy: ${accuracy}%
+  doc.setFont("courier", "normal");
+  doc.setFontSize(12);
 
-    Thank you for participating in the quiz.
-    Stay safe and keep learning about cybersecurity! 
+  content.forEach((line, index) => {
+    doc.text(line, 10, 10 + index * 8);
+  });
 
-    - Avoid phishing links
-    - Use strong passwords
-    - Keep your software updated
-    - Enable 2FA when possible
-    `;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = URL.createObjectURL(blob);
-    link.click();
+  const filename = `${currentUser}_CyberQuiz_Score.pdf`;
+    doc.save(filename);
   }
-</script>
+
+      </script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
